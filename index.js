@@ -1,13 +1,23 @@
-const { ApolloServer, gql } = require('apollo-server');
+import { ApolloServer, gql } from 'apollo-server';
+import dotenv from "dotenv";
 import { makeExecutableSchema } from "graphql-tools";
 import { IsAuthenticatedDirective, HasRoleDirective, HasScopeDirective } from "graphql-auth-user-directives";
+
+dotenv.config();
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
-const typeDefs = gql`    
-    # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+const typeDefs = gql`
+    directive @hasScope(scopes: [String]) on OBJECT | FIELD_DEFINITION
+    directive @hasRole(roles: [Role]) on OBJECT | FIELD_DEFINITION
+    directive @isAuthenticated on OBJECT | FIELD_DEFINITION
 
+    enum Role {
+        visitor
+        admin
+    }
+    
     # This "Book" type defines the queryable fields for every book in our data source.
     type Book {
         title: String,
@@ -71,9 +81,11 @@ const resolvers = {
 // The ApolloServer constructor requires two parameters: your schema
 // definition and your set of resolvers.
 const schema = makeExecutableSchema({
-    typeDefs: typeDefs,
-    resolvers: resolvers,
+    typeDefs,
+    resolvers,
     schemaDirectives: {
+        isAuthenticated: IsAuthenticatedDirective,
+        hasRole: HasRoleDirective,
         hasScope: HasScopeDirective
     }
 });
