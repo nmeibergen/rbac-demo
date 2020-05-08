@@ -10,7 +10,8 @@ const typeDefs = gql`
 
     # This "Book" type defines the queryable fields for every book in our data source.
     type Book {
-        title: String
+        title: String,
+        addedBy: String
     }
     
     type Author {
@@ -32,16 +33,18 @@ const typeDefs = gql`
 
 let books = [
     {
-        title: 'Harry Potter and the Chamber of Secrets'
+        title: 'Harry Potter and the Chamber of Secrets',
+        addedBy: 'Peter'
     },
     {
-        title: 'J.K. Rowling',
+        title: 'Jurassic Park',
+        addedBy: 'Nathan'
     },
 ];
 
 let authors = [
     {
-        name: 'Harry Potter and the Chamber of Secrets'
+        name: 'J.K. Rowling'
     },
     {
         name: 'Michael Crichton',
@@ -71,7 +74,6 @@ const schema = makeExecutableSchema({
     typeDefs: typeDefs,
     resolvers: resolvers,
     schemaDirectives: {
-        isAuthenticated: IsAuthenticatedDirective,
         hasScope: HasScopeDirective
     }
 });
