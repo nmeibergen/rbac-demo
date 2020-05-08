@@ -24,9 +24,13 @@ const typeDefs = gql`
         books: [Book]
         authors: [Author]
     }
+    
+    type Mutation {
+        addBook(title: String): Book
+    }
 `;
 
-const books = [
+let books = [
     {
         title: 'Harry Potter and the Chamber of Secrets'
     },
@@ -35,7 +39,7 @@ const books = [
     },
 ];
 
-const authors = [
+let authors = [
     {
         name: 'Harry Potter and the Chamber of Secrets'
     },
@@ -52,6 +56,13 @@ const resolvers = {
         books: () => books,
         authors: () => authors,
     },
+    Mutation: {
+        addBook: (object, params, ctx, resolveInfo) => {
+            const newBook = {title: params.title};
+            books.push(newBook);
+            return newBook;
+        }
+    }
 };
 
 // The ApolloServer constructor requires two parameters: your schema
