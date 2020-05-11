@@ -1,9 +1,9 @@
 import { ApolloServer, gql } from 'apollo-server';
-import dotenv from "dotenv";
+import dotenv from "dotenv-override";
 import { makeExecutableSchema } from "graphql-tools";
 import { IsAuthenticatedDirective, HasRoleDirective, HasScopeDirective } from "graphql-auth-user-directives";
 
-dotenv.config();
+dotenv.config({override: true});
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -32,12 +32,12 @@ const typeDefs = gql`
     # clients can execute, along with the return type for each. In this
     # case, the "books" query returns an array of zero or more Books (defined above).
     type Query {
-        books: [Book]
-        authors: [Author]
+        books: [Book] @hasScope(scopes: ["books:view"])
+        authors: [Author] @hasScope(scopes: ["authors:view"])
     }
     
     type Mutation {
-        addBook(title: String): Book
+        addBook(title: String): Book @hasScope(scopes: ["book:create"])
     }
 `;
 
@@ -71,7 +71,10 @@ const resolvers = {
     },
     Mutation: {
         addBook: (object, params, ctx, resolveInfo) => {
-            const newBook = {title: params.title};
+            const newBook = {
+                title: params.title,
+                addedBy: ctx.user.name
+            };
             books.push(newBook);
             return newBook;
         }
@@ -90,7 +93,12 @@ const schema = makeExecutableSchema({
     }
 });
 
-const server = new ApolloServer({ schema });
+const server = new ApolloServer({
+    schema,
+    context: ({ req }) => {
+        return req;
+    }
+});
 
 // The `listen` method launches a web server.
 server.listen().then(({ url }) => {
